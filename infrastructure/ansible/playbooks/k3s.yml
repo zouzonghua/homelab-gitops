@@ -1,0 +1,254 @@
+---
+- name: 初始化 K3s Server 操作系统
+  hosts: k3s_servers
+  serial: 1
+  become: true
+  gather_facts: true
+  pre_tasks:
+    - name: 校验 K3s Token
+      ansible.builtin.assert:
+        that:
+          - k3s_token | length >= 32
+        fail_msg: 请先通过环境变量 K3S_TOKEN 提供至少 32 位的随机 Token。
+      no_log: true
+  tasks:
+    - name: 安装基础软件
+      ansible.builtin.apt:
+        name:
+          - ca-certificates
+          - curl
+          - nfs-common
+          - open-iscsi
+        state: present
+        update_cache: true
+
+    - name: 持久化内核模块
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/k3s.conf
+        mode: "0644"
+        content: |
+          overlay
+          br_netfilter
+
+    - name: 加载内核模块
+      ansible.builtin.command: "modprobe {{ item }}"
+      loop:
+        - overlay
+        - br_netfilter
+      changed_when: false
+
+    - name: 配置 Kubernetes 网络参数
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/90-k3s.conf
+        mode: "0644"
+        content: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+          net.ipv4.ip_forward = 1
+      register: k3s_sysctl
+
+    - name: 应用 sysctl 参数
+      ansible.builtin.command: sysctl --system
+      when: k3s_sysctl.changed
+      changed_when: true
+
+    - name: 禁用当前 Swap
+      ansible.builtin.command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+      changed_when: true
+
+    - name: 禁用 fstab 中的 Swap
+      ansible.builtin.replace:
+        path: /etc/fstab
+        regexp: '^(\s*[^#]\S*\s+\S+\s+swap\s+.*)$'
+        replace: '# \1'
+
+    - name: 记录 K3s 网络接口
+      ansible.builtin.set_fact:
+        k3s_network_interface: "{{ ansible_default_ipv4.interface }}"
+
+    - name: 创建 K3s 配置目录
+      ansible.builtin.file:
+        path: /etc/rancher/k3s
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+
+    - name: 写入 K3s Server 配置
+      ansible.builtin.template:
+        src: ../templates/k3s-config.yaml.j2
+        dest: /etc/rancher/k3s/config.yaml
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      register: k3s_config
+
+    - name: 检查 K3s 服务
+      ansible.builtin.stat:
+        path: /etc/systemd/system/k3s.service
+      register: k3s_service
+
+    - name: 重启已有 K3s 服务
+      ansible.builtin.systemd:
+        name: k3s
+        state: restarted
+      when:
+        - k3s_config.changed
+        - k3s_service.stat.exists
+
+    - name: 等待重启后的 API Server
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 6443
+        timeout: 300
+      when:
+        - k3s_config.changed
+        - k3s_service.stat.exists
+
+- name: 初始化第一个 K3s Server
+  hosts: k3s_bootstrap
+  become: true
+  gather_facts: false
+  tasks:
+    - name: 下载 K3s 安装脚本
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/k3s-io/k3s/{{ k3s_version }}/install.sh"
+        dest: /usr/local/src/install-k3s.sh
+        mode: "0755"
+
+    - name: 检查 K3s 版本
+      ansible.builtin.command: k3s --version
+      register: installed_k3s
+      failed_when: false
+      changed_when: false
+
+    - name: 安装固定版本 K3s
+      ansible.builtin.command: /usr/local/src/install-k3s.sh
+      environment:
+        INSTALL_K3S_VERSION: "{{ k3s_version }}"
+      when: k3s_version not in installed_k3s.stdout
+
+    - name: 等待第一个 API Server
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host }}"
+        port: 6443
+        timeout: 300
+
+- name: 加入其余 K3s Server
+  hosts: k3s_joiners
+  serial: 1
+  become: true
+  gather_facts: false
+  tasks:
+    - name: 等待第一个 API Server
+      ansible.builtin.wait_for:
+        host: "{{ hostvars[groups['k3s_bootstrap'][0]].ansible_host }}"
+        port: 6443
+        timeout: 300
+
+    - name: 下载 K3s 安装脚本
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/k3s-io/k3s/{{ k3s_version }}/install.sh"
+        dest: /usr/local/src/install-k3s.sh
+        mode: "0755"
+
+    - name: 检查 K3s 版本
+      ansible.builtin.command: k3s --version
+      register: installed_k3s
+      failed_when: false
+      changed_when: false
+
+    - name: 安装固定版本 K3s
+      ansible.builtin.command: /usr/local/src/install-k3s.sh
+      environment:
+        INSTALL_K3S_VERSION: "{{ k3s_version }}"
+      when: k3s_version not in installed_k3s.stdout
+
+    - name: 等待节点 Ready
+      ansible.builtin.command: >-
+        k3s kubectl wait
+        --for=condition=Ready
+        node/{{ inventory_hostname }}
+        --timeout=300s
+      delegate_to: "{{ groups['k3s_bootstrap'][0] }}"
+      register: joined_node
+      retries: 30
+      delay: 10
+      until: joined_node.rc == 0
+      changed_when: false
+
+- name: 部署 API VIP 并导出 Kubeconfig
+  hosts: k3s_bootstrap
+  become: true
+  gather_facts: false
+  tasks:
+    - name: 等待全部节点 Ready
+      ansible.builtin.command: >-
+        k3s kubectl wait
+        --for=condition=Ready
+        nodes
+        --all
+        --timeout=300s
+      changed_when: false
+
+    - name: 查询 etcd 节点
+      ansible.builtin.command: >-
+        k3s kubectl get nodes
+        --selector=node-role.kubernetes.io/etcd
+        --output=name
+      register: etcd_nodes
+      changed_when: false
+
+    - name: 校验三节点 etcd
+      ansible.builtin.assert:
+        that:
+          - etcd_nodes.stdout_lines | length == 3
+        fail_msg: 集群尚未形成三节点 etcd，停止发布 API VIP。
+
+    - name: 创建自动部署目录
+      ansible.builtin.file:
+        path: /var/lib/rancher/k3s/server/manifests
+        state: directory
+        mode: "0755"
+
+    - name: 部署 kube-vip
+      ansible.builtin.template:
+        src: ../templates/kube-vip.yaml.j2
+        dest: /var/lib/rancher/k3s/server/manifests/kube-vip.yaml
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: 等待 API VIP
+      ansible.builtin.wait_for:
+        host: "{{ k3s_api_vip }}"
+        port: 6443
+        timeout: 300
+
+    - name: 读取 Kubeconfig
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: remote_kubeconfig
+      no_log: true
+
+    - name: 创建本地 Kubeconfig 目录
+      ansible.builtin.file:
+        path: "{{ lookup('env', 'HOME') }}/.kube"
+        state: directory
+        mode: "0700"
+      delegate_to: localhost
+      become: false
+
+    - name: 写入本地 Kubeconfig
+      ansible.builtin.copy:
+        dest: "{{ lookup('env', 'HOME') }}/.kube/homelab-chengdu.yaml"
+        mode: "0600"
+        content: >-
+          {{ remote_kubeconfig.content
+             | b64decode
+             | regex_replace('https://127.0.0.1:6443', 'https://' ~ k3s_api_vip ~ ':6443') }}
+      delegate_to: localhost
+      become: false
+      no_log: true

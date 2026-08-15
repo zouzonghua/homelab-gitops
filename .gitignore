@@ -4,6 +4,7 @@
 .vscode/
 
 # Local environment and credentials
+.venv/
 .env
 .env.*
 !.env.example

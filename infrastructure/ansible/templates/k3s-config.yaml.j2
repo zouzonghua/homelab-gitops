@@ -1,0 +1,15 @@
+token: {{ k3s_token | to_json }}
+{% if inventory_hostname == groups['k3s_bootstrap'][0] %}
+cluster-init: true
+{% else %}
+server: {{ ('https://' ~ hostvars[groups['k3s_bootstrap'][0]].ansible_host ~ ':6443') | to_json }}
+{% endif %}
+node-ip: {{ ansible_host | to_json }}
+tls-san:
+  - {{ k3s_api_vip | to_json }}
+secrets-encryption: true
+disable:
+{% for component in k3s_disable %}
+  - {{ component | to_json }}
+{% endfor %}
+write-kubeconfig-mode: "0600"

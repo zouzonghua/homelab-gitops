@@ -21,7 +21,7 @@ hosts:
     address: 10.10.10.70
     role: k3s-server
     startup_order: 3
-    status: planned
+    status: active
 
   - site: chengdu
     vm_id: 121
@@ -29,7 +29,7 @@ hosts:
     address: 10.10.10.71
     role: k3s-server
     startup_order: 4
-    status: planned
+    status: active
 
   - site: chengdu
     vm_id: 122
@@ -37,7 +37,7 @@ hosts:
     address: 10.10.10.72
     role: k3s-server
     startup_order: 5
-    status: planned
+    status: active
 
   - site: chengdu
     vm_id: 130
