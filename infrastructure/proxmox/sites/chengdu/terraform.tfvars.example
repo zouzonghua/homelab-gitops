@@ -1,5 +1,5 @@
-# Copy to terraform.tfvars and replace with your real public key.
+# Copy to terraform.tfvars and paste the complete contents of your .pub file.
+# Never paste the private key without the .pub suffix.
 ssh_public_key = "ssh-ed25519 AAAA... your-name"
 
-# Keep API credentials outside Git:
-# export PROXMOX_VE_API_TOKEN='opentofu@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+# Keep API credentials outside this file and inject them through the environment.

@@ -18,6 +18,46 @@ VMID、名称、地址和启动顺序读取自仓库根目录 `inventory/`；不
 3. 确认 `pve_share` 已启用 `Import` 与 `Disk image` 内容类型。
 4. 将 `terraform.tfvars.example` 复制为 `terraform.tfvars`，写入 SSH 公钥。
 
+## 配置 SSH 公钥
+
+`ssh_public_key` 是本机 SSH 密钥对中的公钥。OpenTofu 通过 Cloud-init 将它写入三台 Debian VM 的 `debian` 用户，用于无密码登录：
+
+```bash
+ssh -i ~/.ssh/id_ed25519_homelab debian@10.10.10.70
+```
+
+私钥始终保留在本机，不能写入仓库或发送到 PVE。先检查本机已有公钥：
+
+```bash
+ls -1 ~/.ssh/*.pub
+```
+
+若没有适合 Homelab 的密钥，创建独立的 Ed25519 密钥：
+
+```bash
+ssh-keygen -t ed25519 -a 64 \
+  -f ~/.ssh/id_ed25519_homelab \
+  -C "zonghua@homelab"
+```
+
+复制示例文件：
+
+```bash
+cp terraform.tfvars.example terraform.tfvars
+```
+
+查看公钥并将完整单行内容填入 `terraform.tfvars`：
+
+```bash
+cat ~/.ssh/id_ed25519_homelab.pub
+```
+
+```hcl
+ssh_public_key = "ssh-ed25519 AAAA... zonghua@homelab"
+```
+
+`terraform.tfvars` 已被 `.gitignore` 排除。这里只能填写 `.pub` 公钥，不能填写没有 `.pub` 后缀的私钥。
+
 ## 创建 PVE API Token
 
 在 PVE Shell 中创建专用用户，不使用 `root@pam` Token：
@@ -52,12 +92,18 @@ pveum user token add opentofu@pve provider \
 
 Token Secret 仅显示一次，应立即保存到密码管理器。不要将其发到聊天、写入 `terraform.tfvars` 或提交 Git。
 
-在执行 OpenTofu 的本机终端安全输入 Secret：
+在执行 OpenTofu 的本机 zsh 终端安全输入 Secret。固定前缀使用单引号，避免 `!provider` 触发 zsh 历史展开：
 
-```bash
-read -s PROXMOX_TOKEN_SECRET
-export PROXMOX_VE_API_TOKEN="opentofu@pve!provider=${PROXMOX_TOKEN_SECRET}"
+```zsh
+read -rs 'PROXMOX_TOKEN_SECRET?Token Secret: '
+export PROXMOX_VE_API_TOKEN='opentofu@pve!provider='"${PROXMOX_TOKEN_SECRET}"
 unset PROXMOX_TOKEN_SECRET
+```
+
+确认变量存在，但不要输出其内容：
+
+```zsh
+[[ -n "$PROXMOX_VE_API_TOKEN" ]] && echo "Token 已设置"
 ```
 
 验证 Token 可以读取 PVE API：
