@@ -14,15 +14,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-现有 VM 首次需要将 Cloud 镜像的 `debian` 用户迁移为统一的 `ops` 用户：
-
-```bash
-ansible-playbook playbooks/bootstrap-ops.yml
-ansible k3s_servers -m ping
-ansible-playbook playbooks/disable-debian-login.yml
-```
-
-先确认三台节点的 `ops` 连接均返回 `SUCCESS`，才能执行最后一条命令。停用 Playbook 会再次验证 `ops` 的 sudo，然后锁定旧 `debian` 用户并移除其 SSH 公钥。后续所有自动化均使用 `ops`。
+三台节点统一使用 `ops` SSH 用户，公钥由 Cloud-init 写入，Ansible 通过 sudo 执行系统任务。
 
 首次执行时生成 Token，并持久化到 Git 仓库外。后续执行必须复用同一个文件，不要重新生成：
 

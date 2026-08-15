@@ -139,56 +139,6 @@ Apply 会创建并启动三台 VM。执行前必须确认 Plan 不修改或删�
 
 模板和 K3s VM 均启用静态 `prevent_destroy = true`，同时默认不自动清理未引用磁盘。确需销毁时必须在独立维护窗口临时修改 K3s VM 资源，并再次审查 Plan。
 
-## 仅重建三台 K3s VM
-
-如果需要让 Cloud-init 重新创建 `ops` 用户，只针对 VMID `120–122` 做一次性重建。模板 `400` 的 `prevent_destroy` 始终不能修改。
-
-维护窗口内，临时修改 `main.tf` 中 `k3s_server` 资源的三个销毁相关字段：
-
-```hcl
-delete_unreferenced_disks_on_destroy = true
-purge_on_destroy                     = true
-
-lifecycle {
-  prevent_destroy = false
-}
-```
-
-只对三台 K3s VM 生成销毁计划，不要使用无目标的 `tofu destroy`：
-
-```bash
-tofu plan -destroy \
-  -target='proxmox_virtual_environment_vm.k3s_server["cd-k3s-server-01"]' \
-  -target='proxmox_virtual_environment_vm.k3s_server["cd-k3s-server-02"]' \
-  -target='proxmox_virtual_environment_vm.k3s_server["cd-k3s-server-03"]' \
-  -out=chengdu-k3s-destroy.tfplan
-tofu show chengdu-k3s-destroy.tfplan
-tofu apply chengdu-k3s-destroy.tfplan
-```
-
-`tofu show` 必须只显示 VMID `120`、`121`、`122` 的销毁；如果出现模板 `400`、VMID `100/110` 或 LXC，立即停止，不要 Apply。
-
-确认销毁完成后，立即恢复 `main.tf` 中的三个安全字段：
-
-```hcl
-delete_unreferenced_disks_on_destroy = false
-purge_on_destroy                     = false
-
-lifecycle {
-  prevent_destroy = true
-}
-```
-
-再重新创建：
-
-```bash
-tofu plan -out=chengdu-k3s-recreate.tfplan
-tofu show chengdu-k3s-recreate.tfplan
-tofu apply chengdu-k3s-recreate.tfplan
-```
-
-销毁前请确认 K3s 尚未承载需要保留的数据；本流程会删除三台 VM 及其磁盘，模板和其他资源不在范围内。
-
 ## 当前边界
 
 - 尚未安装 K3s、kube-vip、Cilium 或 Flux。
