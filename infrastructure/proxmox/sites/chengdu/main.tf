@@ -153,7 +153,7 @@ resource "proxmox_virtual_environment_vm" "k3s_server" {
 
     user_account {
       keys     = [trimspace(var.ssh_public_key)]
-      username = "debian"
+      username = "ops"
     }
   }
 

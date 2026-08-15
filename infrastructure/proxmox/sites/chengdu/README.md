@@ -20,10 +20,10 @@ VMID、名称、地址和启动顺序读取自仓库根目录 `inventory/`；不
 
 ## 配置 SSH 公钥
 
-`ssh_public_key` 是本机 SSH 密钥对中的公钥。OpenTofu 通过 Cloud-init 将它写入三台 Debian VM 的 `debian` 用户，用于无密码登录：
+`ssh_public_key` 是本机 SSH 密钥对中的公钥。OpenTofu 通过 Cloud-init 将它写入三台 Debian VM 的 `ops` 用户，用于无密码登录：
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_homelab debian@10.10.10.70
+ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.70
 ```
 
 私钥始终保留在本机，不能写入仓库或发送到 PVE。先检查本机已有公钥：

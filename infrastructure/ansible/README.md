@@ -14,6 +14,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+现有 VM 首次需要将 Cloud 镜像的 `debian` 用户迁移为统一的 `ops` 用户：
+
+```bash
+ansible-playbook playbooks/bootstrap-ops.yml
+ansible k3s_servers -m ping
+ansible-playbook playbooks/disable-debian-login.yml
+```
+
+先确认三台节点的 `ops` 连接均返回 `SUCCESS`，才能执行最后一条命令。停用 Playbook 会再次验证 `ops` 的 sudo，然后锁定旧 `debian` 用户并移除其 SSH 公钥。后续所有自动化均使用 `ops`。
+
 首次执行时生成 Token，并持久化到 Git 仓库外。后续执行必须复用同一个文件，不要重新生成：
 
 ```bash
@@ -45,7 +55,7 @@ unset K3S_TOKEN
 
 Playbook 会依次完成：
 
-1. 配置三台 Debian 节点的内核模块、sysctl 与基础软件。
+1. 通过 `ops` 用户配置三台 Debian 节点的内核模块、sysctl 与基础软件。
 2. 在 `cd-k3s-server-01` 初始化嵌入式 etcd。
 3. 将另外两台 Server 加入集群。
 4. 部署 kube-vip，以 ARP 模式提供 `10.10.10.69:6443`。

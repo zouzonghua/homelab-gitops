@@ -1,0 +1,43 @@
+---
+- name: 创建统一的 ops 管理用户
+  hosts: k3s_servers
+  become: true
+  gather_facts: false
+  vars:
+    ansible_user: debian
+  tasks:
+    - name: 创建 ops 用户
+      ansible.builtin.user:
+        name: ops
+        comment: Infrastructure operations
+        groups:
+          - sudo
+        append: true
+        create_home: true
+        shell: /bin/bash
+        state: present
+
+    - name: 创建 ops SSH 目录
+      ansible.builtin.file:
+        path: /home/ops/.ssh
+        state: directory
+        owner: ops
+        group: ops
+        mode: "0700"
+
+    - name: 配置 ops SSH 公钥
+      ansible.builtin.copy:
+        dest: /home/ops/.ssh/authorized_keys
+        content: "{{ lookup('file', ops_ssh_public_key_file) | trim }}\n"
+        owner: ops
+        group: ops
+        mode: "0600"
+
+    - name: 配置 ops 免密码 sudo
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/90-ops
+        content: "ops ALL=(ALL:ALL) NOPASSWD: ALL\n"
+        owner: root
+        group: root
+        mode: "0440"
+        validate: /usr/sbin/visudo -cf %s
