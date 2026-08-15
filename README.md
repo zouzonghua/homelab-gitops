@@ -6,7 +6,7 @@
 
 - `inventory/`：站点、网络、主机与服务的唯一事实源
 - `infrastructure/`：OpenTofu 与 Ansible 基础设施代码
-- `kubernetes/`：K3s 集群与 Flux 应用声明
+- `kubernetes/`：K3s 集群与 Argo CD 应用声明
 - `docs/`：架构、地址规划和灾难恢复文档
 - `secrets/`：仅保存 SOPS 加密后的敏感配置
 
@@ -17,7 +17,7 @@
 | 地址、VLAN、DNS、路由设计 | Git 作为事实源 |
 | 普通 VM/LXC | OpenTofu，人工审批后执行 |
 | Debian/K3s 节点 | Ansible 初始化 |
-| Kubernetes 应用 | Flux 同步 |
+| Kubernetes 应用 | Argo CD 同步 |
 | PVE 网络、OPNsense、存储 | 只记录设计和恢复步骤，人工变更 |
 
 ## 使用原则

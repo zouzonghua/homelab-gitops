@@ -141,6 +141,6 @@ Apply 会创建并启动三台 VM。执行前必须确认 Plan 不修改或删�
 
 ## 当前边界
 
-- 尚未安装 K3s、kube-vip、Cilium 或 Flux。
+- 尚未安装 Argo CD 或 Cilium。
 - QEMU Guest Agent 将由后续系统初始化层安装，当前 Provider 不等待 Agent。
 - OpenTofu State 不提交 Git；正式使用前需要确定加密的远程 State 与备份方案。
