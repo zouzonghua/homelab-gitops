@@ -278,10 +278,24 @@
         group: root
         mode: "0644"
 
+    - name: 配置 Traefik Ingress VIP
+      ansible.builtin.template:
+        src: ../templates/traefik-config.yaml.j2
+        dest: /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+        owner: root
+        group: root
+        mode: "0644"
+
     - name: 等待 API VIP
       ansible.builtin.wait_for:
         host: "{{ k3s_api_vip }}"
         port: 6443
+        timeout: 300
+
+    - name: 等待 Ingress VIP
+      ansible.builtin.wait_for:
+        host: "{{ k3s_ingress_vip }}"
+        port: 443
         timeout: 300
 
     - name: 读取 Kubeconfig

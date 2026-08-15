@@ -1,0 +1,11 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    service:
+      type: LoadBalancer
+      annotations:
+        kube-vip.io/loadbalancerIPs: {{ k3s_ingress_vip | to_json }}

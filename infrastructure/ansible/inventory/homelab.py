@@ -33,6 +33,11 @@ k3s_api_vip = next(
     for service in services
     if service["name"] == "chengdu-k3s-api"
 )
+k3s_ingress_vip = next(
+    service["address"]
+    for service in services
+    if service["name"] == "chengdu-k3s-ingress"
+)
 
 bootstrap = k3s_servers[0]["name"]
 inventory = {
@@ -41,6 +46,7 @@ inventory = {
             host["name"]: {
                 "ansible_host": host["address"],
                 "k3s_api_vip": k3s_api_vip,
+                "k3s_ingress_vip": k3s_ingress_vip,
             }
             for host in k3s_servers
         }

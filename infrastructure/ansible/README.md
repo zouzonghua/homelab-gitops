@@ -50,14 +50,16 @@ Playbook 会依次完成：
 1. 通过 `ops` 用户配置三台 Debian 节点的 QEMU Guest Agent、NTP 时间同步、内核模块、sysctl 与基础软件。
 2. 在 `cd-k3s-server-01` 初始化嵌入式 etcd。
 3. 将另外两台 Server 加入集群。
-4. 部署 kube-vip，以 ARP 模式提供 `10.10.10.69:6443`。
-5. 将本地 Kubeconfig 写入 `~/.kube/homelab-chengdu.yaml`。
+4. 部署 kube-vip，以 ARP 模式提供 API VIP `10.10.10.69:6443`。
+5. 为 Traefik 提供局域网 Ingress VIP `10.10.10.68:443`。
+6. 将本地 Kubeconfig 写入 `~/.kube/homelab-chengdu.yaml`。
 
 验证：
 
 ```bash
 KUBECONFIG=~/.kube/homelab-chengdu.yaml kubectl get nodes -o wide
 ping -c 2 10.10.10.69
+ping -c 2 10.10.10.68
 ```
 
 版本升级必须先修改 `group_vars/all.yml`，审核差异后再执行 Playbook。
