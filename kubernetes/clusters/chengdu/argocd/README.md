@@ -15,4 +15,39 @@ kubectl -n argocd rollout status deployment/argocd-server --timeout=300s
 
 `kustomization.yaml` 会从固定版本的官方 URL 拉取安装清单。Argo CD 的 CRD 较大，Bootstrap 必须使用 Server-Side Apply，避免客户端 `last-applied-configuration` 注解超过 Kubernetes 限制。
 
-确认 Argo CD 正常并完成 Git 仓库认证后，应用上级 `kubernetes/clusters/chengdu/`，让 Argo CD 管理自身和成都配置。不要把管理员密码或 Kubeconfig 写入仓库。
+保持一个终端运行端口转发：
+
+```bash
+kubectl -n argocd port-forward svc/argocd-server 8443:443
+```
+
+在另一个终端登录 Argo CD，并添加 GitHub 私有仓库认证：
+
+```bash
+export KUBECONFIG=~/.kube/homelab-chengdu.yaml
+ARGOCD_INITIAL_PASSWORD="$(argocd admin initial-password -n argocd | head -n 1)"
+
+argocd login localhost:8443 \
+  --username admin \
+  --password "$ARGOCD_INITIAL_PASSWORD" \
+  --insecure
+
+unset ARGOCD_INITIAL_PASSWORD
+
+argocd repo add \
+  ssh://git@github.com/zouzonghua/homelab-gitops.git \
+  --ssh-private-key-path "$HOME/.ssh/id_ed25519_argocd_homelab"
+
+argocd repo list
+```
+
+仓库状态为 `Successful` 后，创建成都根 Application，让 Argo CD 接管上级目录：
+
+```bash
+kubectl apply --server-side \
+  -f kubernetes/clusters/chengdu/argocd-application.yaml
+
+argocd app list
+```
+
+不要把管理员密码、SSH 私钥或 Kubeconfig 写入仓库。
