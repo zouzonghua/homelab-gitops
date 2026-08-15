@@ -32,7 +32,6 @@ resource "proxmox_download_file" "debian_cloud_image" {
 resource "proxmox_virtual_environment_vm" "debian_template" {
   name        = "tpl-vm-debian"
   description = "Debian 13 cloud-init template managed by OpenTofu."
-  tags        = ["debian", "opentofu", "template"]
 
   node_name = var.node_name
   vm_id     = 400
@@ -93,7 +92,6 @@ resource "proxmox_virtual_environment_vm" "k3s_server" {
 
   name        = each.value.name
   description = "Chengdu K3s server managed by OpenTofu."
-  tags        = ["chengdu", "k3s", "opentofu"]
 
   node_name = var.node_name
   vm_id     = each.value.vm_id
