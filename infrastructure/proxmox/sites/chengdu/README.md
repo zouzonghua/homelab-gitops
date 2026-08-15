@@ -18,11 +18,65 @@ VMID、名称、地址和启动顺序读取自仓库根目录 `inventory/`；不
 3. 确认 `pve_share` 已启用 `Import` 与 `Disk image` 内容类型。
 4. 将 `terraform.tfvars.example` 复制为 `terraform.tfvars`，写入 SSH 公钥。
 
-API Token 只通过环境变量提供：
+## 创建 PVE API Token
+
+在 PVE Shell 中创建专用用户，不使用 `root@pam` Token：
 
 ```bash
-export PROXMOX_VE_API_TOKEN='opentofu@pve!provider=<token-secret>'
+pveum user add opentofu@pve \
+  --comment "OpenTofu managed infrastructure"
 ```
+
+创建当前配置所需的最小权限角色：
+
+```bash
+pveum role add OpenTofuK3s --privs \
+"Datastore.Allocate Datastore.AllocateSpace Datastore.AllocateTemplate Datastore.Audit SDN.Use Sys.AccessNetwork Sys.Audit Sys.Modify VM.Allocate VM.Audit VM.Clone VM.Config.CDROM VM.Config.CPU VM.Config.Cloudinit VM.Config.Disk VM.Config.HWType VM.Config.Memory VM.Config.Network VM.Config.Options VM.PowerMgmt"
+```
+
+将角色授予专用用户：
+
+```bash
+pveum acl modify / \
+  --user opentofu@pve \
+  --role OpenTofuK3s
+```
+
+创建继承该用户权限的 API Token：
+
+```bash
+pveum user token add opentofu@pve provider \
+  --privsep=0 \
+  --comment "homelab-gitops"
+```
+
+Token Secret 仅显示一次，应立即保存到密码管理器。不要将其发到聊天、写入 `terraform.tfvars` 或提交 Git。
+
+在执行 OpenTofu 的本机终端安全输入 Secret：
+
+```bash
+read -s PROXMOX_TOKEN_SECRET
+export PROXMOX_VE_API_TOKEN="opentofu@pve!provider=${PROXMOX_TOKEN_SECRET}"
+unset PROXMOX_TOKEN_SECRET
+```
+
+验证 Token 可以读取 PVE API：
+
+```bash
+curl -sk \
+  -H "Authorization: PVEAPIToken=${PROXMOX_VE_API_TOKEN}" \
+  https://10.10.10.2:8006/api2/json/version
+```
+
+检查用户、Token 和 ACL：
+
+```bash
+pveum user list
+pveum user token list opentofu@pve
+pveum acl list
+```
+
+若 OpenTofu 返回 `403 Permission check failed`，应根据错误补充单项权限，不要直接改用 `Administrator`。
 
 ## 执行
 
