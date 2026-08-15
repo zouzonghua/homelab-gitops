@@ -1,3 +1,47 @@
 ---
-# 仅登记已核实的设备；不要在此保存密码、Token 或私钥。
-hosts: []
+# 不要在此保存密码、Token 或私钥。
+hosts:
+  - site: chengdu
+    vm_id: 100
+    name: cd-opnsense
+    address: 10.10.10.1
+    role: gateway
+    status: active
+
+  - site: chengdu
+    vm_id: 110
+    name: cd-omv
+    address: 10.10.10.20
+    role: storage
+    status: active
+
+  - site: chengdu
+    vm_id: 120
+    name: cd-k3s-server-01
+    address: 10.10.10.70
+    role: k3s-server
+    startup_order: 3
+    status: planned
+
+  - site: chengdu
+    vm_id: 121
+    name: cd-k3s-server-02
+    address: 10.10.10.71
+    role: k3s-server
+    startup_order: 4
+    status: planned
+
+  - site: chengdu
+    vm_id: 122
+    name: cd-k3s-server-03
+    address: 10.10.10.72
+    role: k3s-server
+    startup_order: 5
+    status: planned
+
+  - site: chengdu
+    vm_id: 130
+    name: cd-k3s-worker-01
+    address: 10.10.10.73
+    role: k3s-worker
+    status: reserved

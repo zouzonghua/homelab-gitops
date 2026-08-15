@@ -19,6 +19,9 @@ kubeconfig
 *.tfstate
 *.tfstate.*
 *.tfplan
+terraform.tfvars
+*.auto.tfvars
+!*.tfvars.example
 crash.log
 crash.*.log
 override.tf

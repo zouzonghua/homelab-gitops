@@ -1,3 +1,9 @@
 ---
 # 记录服务的期望部署站点和运行平台。
-services: []
+services:
+  - name: chengdu-k3s-api
+    site: chengdu
+    address: 10.10.10.69
+    port: 6443
+    provider: kube-vip
+    status: reserved

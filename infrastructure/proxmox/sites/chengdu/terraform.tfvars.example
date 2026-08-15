@@ -1,0 +1,5 @@
+# Copy to terraform.tfvars and replace with your real public key.
+ssh_public_key = "ssh-ed25519 AAAA... your-name"
+
+# Keep API credentials outside Git:
+# export PROXMOX_VE_API_TOKEN='opentofu@pve!provider=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
