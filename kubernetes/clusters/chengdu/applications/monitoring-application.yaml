@@ -14,6 +14,7 @@ spec:
         alertmanager:
           enabled: false
         grafana:
+          replicas: 1
           admin:
             existingSecret: ""
           service:
@@ -27,7 +28,8 @@ spec:
               memory: 256Mi
         prometheus:
           prometheusSpec:
-            retention: 7d
+            replicas: 1
+            retention: 3d
             resources:
               requests:
                 cpu: 200m
