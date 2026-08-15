@@ -110,7 +110,7 @@ resource "proxmox_virtual_environment_vm" "k3s_server" {
   }
 
   agent {
-    enabled = false
+    enabled = true
   }
 
   startup {
@@ -131,7 +131,7 @@ resource "proxmox_virtual_environment_vm" "k3s_server" {
   disk {
     datastore_id = var.vm_storage
     interface    = "scsi0"
-    size         = 32
+    size         = 20
     discard      = "on"
     iothread     = true
     ssd          = true
