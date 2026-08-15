@@ -19,8 +19,51 @@
           - curl
           - nfs-common
           - open-iscsi
+          - qemu-guest-agent
+          - systemd-timesyncd
         state: present
         update_cache: true
+
+    - name: 启用 QEMU Guest Agent
+      ansible.builtin.systemd:
+        name: qemu-guest-agent
+        enabled: true
+        state: started
+
+    - name: 创建 systemd-timesyncd 配置目录
+      ansible.builtin.file:
+        path: /etc/systemd/timesyncd.conf.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: 配置 NTP 时间源
+      ansible.builtin.copy:
+        dest: /etc/systemd/timesyncd.conf.d/99-homelab.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [Time]
+          NTP={{ ntp_servers | join(' ') }}
+          FallbackNTP={{ ntp_fallback_servers | join(' ') }}
+      register: ntp_config
+
+    - name: 重启并启用 systemd-timesyncd
+      ansible.builtin.systemd:
+        name: systemd-timesyncd
+        enabled: true
+        state: restarted
+      when: ntp_config.changed
+
+    - name: 确认系统时间已同步
+      ansible.builtin.command: timedatectl show --property=NTPSynchronized --value
+      register: ntp_sync
+      changed_when: false
+      retries: 12
+      delay: 5
+      until: ntp_sync.stdout | trim == 'yes'
 
     - name: 持久化内核模块
       ansible.builtin.copy:

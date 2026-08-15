@@ -47,7 +47,7 @@ unset K3S_TOKEN
 
 Playbook 会依次完成：
 
-1. 通过 `ops` 用户配置三台 Debian 节点的内核模块、sysctl 与基础软件。
+1. 通过 `ops` 用户配置三台 Debian 节点的 QEMU Guest Agent、NTP 时间同步、内核模块、sysctl 与基础软件。
 2. 在 `cd-k3s-server-01` 初始化嵌入式 etcd。
 3. 将另外两台 Server 加入集群。
 4. 部署 kube-vip，以 ARP 模式提供 `10.10.10.69:6443`。

@@ -9,3 +9,9 @@ k3s_disable:
   - servicelb
 
 kube_vip_version: v1.2.2
+
+ntp_servers:
+  - 10.10.10.1
+ntp_fallback_servers:
+  - ntp.aliyun.com
+  - cn.pool.ntp.org
