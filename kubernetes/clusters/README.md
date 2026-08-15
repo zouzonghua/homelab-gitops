@@ -1,3 +1,3 @@
 # Clusters
 
-按站点创建目录。仅在对应 K3s 集群存在并完成 Bootstrap 后提交 Argo CD 配置。
+按站点创建目录。对应 K3s 集群完成 Bootstrap 后，由 Argo CD `Application` 管理站点配置。
