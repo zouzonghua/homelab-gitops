@@ -39,6 +39,8 @@ resource "proxmox_virtual_environment_vm" "debian_template" {
   template  = true
   started   = false
 
+  scsi_hardware = "virtio-scsi-single"
+
   agent {
     enabled = false
   }
@@ -97,6 +99,8 @@ resource "proxmox_virtual_environment_vm" "k3s_server" {
   vm_id     = each.value.vm_id
   on_boot   = true
   started   = true
+
+  scsi_hardware = "virtio-scsi-single"
 
   clone {
     datastore_id = var.vm_storage
