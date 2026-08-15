@@ -1,0 +1,27 @@
+---
+sites:
+  cloud-aliyun:
+    code: aly
+    role: wireguard-hub
+    status: active
+
+  chengdu:
+    code: cd
+    network: 10.10.0.0/20
+    wireguard_ip: 10.10.250.2
+    gateway: opnsense
+    status: active
+
+  beihai:
+    code: bh
+    network: 10.10.16.0/20
+    wireguard_ip: 10.10.250.3
+    gateway: routeros
+    status: active
+
+  shenzhen:
+    code: sz
+    network: 10.10.32.0/20
+    wireguard_ip: 10.10.250.4
+    gateway: pending
+    status: planned

@@ -1,0 +1,47 @@
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.kubeconfig
+kubeconfig
+
+# OpenTofu / Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ansible
+*.retry
+
+# Decrypted secrets and device backups
+*.decrypted.*
+*.unencrypted.*
+*.backup.xml
+*.config.xml
+!*.sops.yaml
+!*.sops.yml
+
+# Secrets are deny-by-default; only documentation and SOPS ciphertext are tracked.
+secrets/**
+!secrets/**/
+!secrets/README.md
+!secrets/*.sops.yaml
+!secrets/*.sops.yml
+!secrets/**/*.sops.yaml
+!secrets/**/*.sops.yml

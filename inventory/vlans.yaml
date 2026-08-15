@@ -1,0 +1,10 @@
+---
+vlans:
+  - id: 10
+    name: infra
+    purpose: Infrastructure management
+  - id: 20
+    name: trusted
+    purpose: Trusted clients
+
+# 新增 VLAN 前，先确认其 ID 和语义能在所有站点保持一致。
