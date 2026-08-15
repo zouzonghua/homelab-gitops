@@ -124,11 +124,18 @@
       failed_when: false
       changed_when: false
 
+    - name: 检查 K3s 服务
+      ansible.builtin.command: systemctl is-active k3s
+      register: k3s_service_state
+      failed_when: false
+      changed_when: false
+
     - name: 安装固定版本 K3s
       ansible.builtin.command: /usr/local/src/install-k3s.sh
       environment:
         INSTALL_K3S_VERSION: "{{ k3s_version }}"
-      when: k3s_version not in installed_k3s.stdout
+      when:
+        - k3s_version not in installed_k3s.stdout or k3s_service_state.stdout != 'active'
 
     - name: 等待第一个 API Server
       ansible.builtin.wait_for:
@@ -160,11 +167,18 @@
       failed_when: false
       changed_when: false
 
+    - name: 检查 K3s 服务
+      ansible.builtin.command: systemctl is-active k3s
+      register: k3s_service_state
+      failed_when: false
+      changed_when: false
+
     - name: 安装固定版本 K3s
       ansible.builtin.command: /usr/local/src/install-k3s.sh
       environment:
         INSTALL_K3S_VERSION: "{{ k3s_version }}"
-      when: k3s_version not in installed_k3s.stdout
+      when:
+        - k3s_version not in installed_k3s.stdout or k3s_service_state.stdout != 'active'
 
     - name: 等待节点 Ready
       ansible.builtin.command: >-
