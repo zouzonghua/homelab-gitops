@@ -18,6 +18,13 @@ VMID、名称、地址和启动顺序读取自仓库根目录 `inventory/`；不
 3. 确认 `local` 已启用 `Import` 与 `Disk image` 内容类型。
 4. 将 `terraform.tfvars.example` 复制为 `terraform.tfvars`，写入 SSH 公钥。
 
+在 macOS 安装 OpenTofu：
+
+```bash
+brew install opentofu
+tofu version
+```
+
 ## 配置 SSH 公钥
 
 `ssh_public_key` 是本机 SSH 密钥对中的公钥。OpenTofu 通过 Cloud-init 将它写入三台 Debian VM 的 `ops` 用户，用于无密码登录：
@@ -124,7 +131,15 @@ pveum acl list
 
 若 OpenTofu 返回 `403 Permission check failed`，应根据错误补充单项权限，不要直接改用 `Administrator`。
 
-## 执行
+## 创建虚拟机
+
+从仓库根目录进入成都站点：
+
+```bash
+cd infrastructure/proxmox/sites/chengdu
+```
+
+按照上文设置 `PROXMOX_VE_API_TOKEN` 并配置好 `terraform.tfvars` 后执行：
 
 ```bash
 tofu init
@@ -136,6 +151,16 @@ tofu apply chengdu.tfplan
 ```
 
 Apply 会创建并启动三台 VM。执行前必须确认 Plan 不修改或删除 VMID `100`、`110` 及现有 LXC。
+
+创建完成后登录 Debian：
+
+```bash
+ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.70
+ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.71
+ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.72
+```
+
+系统不设置 SSH 密码，仅允许 `ops` 使用私钥登录；需要 root Shell 时执行 `sudo -i`。
 
 模板和 K3s VM 均启用静态 `prevent_destroy = true`，同时默认不自动清理未引用磁盘。确需销毁时必须在独立维护窗口临时修改 K3s VM 资源，并再次审查 Plan。
 
