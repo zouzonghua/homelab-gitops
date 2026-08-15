@@ -1,6 +1,6 @@
 # 成都 Argo CD
 
-Argo CD 运行在成都 K3s 集群的 `argocd` Namespace。安装清单固定到 Argo CD `v3.2.12`，便于审核和复现。
+Argo CD 运行在成都 K3s 集群的 `argocd` Namespace。安装清单固定到 Argo CD `v3.5.1`，便于审核和复现。
 
 首次 Bootstrap 仍需由本地 `kubectl` 执行：
 
