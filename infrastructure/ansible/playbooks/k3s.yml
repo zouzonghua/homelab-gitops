@@ -106,10 +106,6 @@
         regexp: '^(\s*[^#]\S*\s+\S+\s+swap\s+.*)$'
         replace: '# \1'
 
-    - name: 记录 K3s 网络接口
-      ansible.builtin.set_fact:
-        k3s_network_interface: "{{ ansible_default_ipv4.interface }}"
-
     - name: 创建 K3s 配置目录
       ansible.builtin.file:
         path: /etc/rancher/k3s
@@ -239,7 +235,7 @@
 - name: 部署 API VIP 并导出 Kubeconfig
   hosts: k3s_bootstrap
   become: true
-  gather_facts: false
+  gather_facts: true
   tasks:
     - name: 等待全部节点 Ready
       ansible.builtin.command: >-

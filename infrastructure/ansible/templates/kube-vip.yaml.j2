@@ -55,7 +55,7 @@ spec:
             - name: vip_arp
               value: "true"
             - name: vip_interface
-              value: {{ k3s_network_interface | to_json }}
+              value: {{ ansible_default_ipv4.interface | to_json }}
             - name: vip_subnet
               value: "32"
             - name: cp_enable
