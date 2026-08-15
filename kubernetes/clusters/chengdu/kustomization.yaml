@@ -7,3 +7,4 @@ resources:
   - applications/nginx
   - applications/headlamp-application.yaml
   - applications/headlamp-rbac-application.yaml
+  - applications/monitoring-application.yaml
