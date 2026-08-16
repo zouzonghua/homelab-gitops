@@ -23,6 +23,7 @@
           - systemd-timesyncd
         state: present
         update_cache: true
+        cache_valid_time: 3600
 
     - name: 启用 QEMU Guest Agent
       ansible.builtin.systemd:
@@ -288,12 +289,6 @@
         port: 6443
         timeout: 300
 
-    - name: 等待 Ingress VIP
-      ansible.builtin.wait_for:
-        host: "{{ k3s_ingress_vip }}"
-        port: 443
-        timeout: 300
-
     - name: 读取 Kubeconfig
       ansible.builtin.slurp:
         src: /etc/rancher/k3s/k3s.yaml
@@ -319,3 +314,9 @@
       delegate_to: localhost
       become: false
       no_log: true
+
+    - name: 等待 Ingress VIP
+      ansible.builtin.wait_for:
+        host: "{{ k3s_ingress_vip }}"
+        port: 443
+        timeout: 300
