@@ -7,6 +7,7 @@ server: {{ ('https://' ~ hostvars[groups['k3s_bootstrap'][0]].ansible_host ~ ':6
 node-ip: {{ ansible_host | to_json }}
 tls-san:
   - {{ k3s_api_vip | to_json }}
+  - {{ ansible_host | to_json }}
 secrets-encryption: true
 disable:
 {% for component in k3s_disable %}

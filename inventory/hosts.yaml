@@ -24,22 +24,6 @@ hosts:
     status: active
 
   - site: chengdu
-    vm_id: 121
-    name: cd-k3s-server-02
-    address: 10.10.10.71
-    role: k3s-server
-    startup_order: 4
-    status: active
-
-  - site: chengdu
-    vm_id: 122
-    name: cd-k3s-server-03
-    address: 10.10.10.72
-    role: k3s-server
-    startup_order: 5
-    status: active
-
-  - site: chengdu
     vm_id: 130
     name: cd-k3s-worker-01
     address: 10.10.10.73

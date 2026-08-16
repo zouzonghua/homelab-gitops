@@ -264,11 +264,11 @@
       register: etcd_nodes
       changed_when: false
 
-    - name: 校验三节点 etcd
+    - name: 校验 etcd 节点
       ansible.builtin.assert:
         that:
-          - etcd_nodes.stdout_lines | length == 3
-        fail_msg: 集群尚未形成三节点 etcd，停止发布 API VIP。
+          - etcd_nodes.stdout_lines | length == groups['k3s_servers'] | length
+        fail_msg: 集群 etcd 节点数量不满足预期，停止发布 API VIP。
 
     - name: 创建自动部署目录
       ansible.builtin.file:

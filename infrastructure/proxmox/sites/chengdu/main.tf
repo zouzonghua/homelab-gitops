@@ -118,18 +118,18 @@ resource "proxmox_virtual_environment_vm" "k3s_server" {
   }
 
   cpu {
-    cores = 2
+    cores = 6
     type  = "host"
   }
 
   memory {
-    dedicated = 2048
+    dedicated = 12288
   }
 
   disk {
     datastore_id = var.vm_storage
     interface    = "scsi0"
-    size         = 20
+    size         = 64
     discard      = "on"
     iothread     = true
     ssd          = true
@@ -168,11 +168,11 @@ resource "proxmox_virtual_environment_vm" "k3s_server" {
 
   serial_device {}
 
-  delete_unreferenced_disks_on_destroy = false
-  purge_on_destroy                     = false
+  delete_unreferenced_disks_on_destroy = true
+  purge_on_destroy                     = true
   stop_on_destroy                      = true
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
