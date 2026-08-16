@@ -7,7 +7,7 @@ spec:
   dependsOn:
     - name: infrastructure
   interval: 30m
-  path: ./kubernetes/applications/chengdu
+  path: ./kubernetes/apps/chengdu
   prune: true
   sourceRef:
     kind: GitRepository
