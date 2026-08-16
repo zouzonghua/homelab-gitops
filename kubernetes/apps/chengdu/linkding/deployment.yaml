@@ -21,6 +21,9 @@ spec:
         - name: linkding
           image: sissbruecker/linkding:latest
           imagePullPolicy: IfNotPresent
+          env:
+            - name: LD_DISABLE_WAL_MODE
+              value: "true"
           ports:
             - name: http
               containerPort: 9090
