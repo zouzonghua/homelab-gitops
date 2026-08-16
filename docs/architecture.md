@@ -11,7 +11,7 @@ Git / Pull Request
   ├─ Inventory：站点、网络、主机和服务事实
   ├─ OpenTofu：可替换的 PVE VM/LXC
   ├─ Ansible：操作系统与 K3s 初始化
-  └─ Argo CD：Kubernetes 应用持续同步
+  └─ Flux：Kubernetes 应用持续同步
 ```
 
 PVE 宿主机、OPNsense、物理网络、存储和数据盘不接受无人值守自动变更。

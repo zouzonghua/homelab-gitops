@@ -166,6 +166,6 @@ ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.72
 
 ## 当前边界
 
-- 尚未安装 Argo CD 或 Cilium。
+- GitOps 控制器由 Kubernetes 层的 Flux 管理。
 - QEMU Guest Agent 将由后续系统初始化层安装，当前 Provider 不等待 Agent。
 - OpenTofu State 不提交 Git；正式使用前需要确定加密的远程 State 与备份方案。

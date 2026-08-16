@@ -5,8 +5,8 @@
 1. 恢复物理网络、PVE 存储和管理入口。
 2. 人工恢复 OPNsense/RouterOS 等网络核心。
 3. 恢复普通 VM/LXC，并用 Ansible 配置系统。
-4. 恢复 K3s 控制面与 Argo CD。
-5. 由 Argo CD 恢复基础组件和应用。
+4. 恢复 K3s 控制面并 Bootstrap Flux。
+5. 由 Flux 恢复基础组件和应用。
 
 ## 最低备份要求
 
