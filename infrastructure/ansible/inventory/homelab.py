@@ -16,7 +16,6 @@ def load_yaml(path: Path) -> dict:
 
 
 hosts = load_yaml(REPOSITORY_ROOT / "inventory/hosts.yaml")["hosts"]
-services = load_yaml(REPOSITORY_ROOT / "inventory/services.yaml")["services"]
 
 k3s_servers = sorted(
     (
@@ -28,34 +27,18 @@ k3s_servers = sorted(
     ),
     key=lambda host: host["startup_order"],
 )
-k3s_api_vip = next(
-    service["address"]
-    for service in services
-    if service["name"] == "chengdu-k3s-api"
-)
-k3s_ingress_vip = next(
-    service["address"]
-    for service in services
-    if service["name"] == "chengdu-k3s-ingress"
-)
 
-bootstrap = k3s_servers[0]["name"]
 inventory = {
     "_meta": {
         "hostvars": {
             host["name"]: {
                 "ansible_host": host["address"],
-                "k3s_api_vip": k3s_api_vip,
-                "k3s_ingress_vip": k3s_ingress_vip,
             }
             for host in k3s_servers
         }
     },
     "k3s_servers": {"hosts": [host["name"] for host in k3s_servers]},
-    "k3s_bootstrap": {"hosts": [bootstrap]},
-    "k3s_joiners": {
-        "hosts": [host["name"] for host in k3s_servers if host["name"] != bootstrap]
-    },
+    "k3s_bootstrap": {"hosts": [k3s_servers[0]["name"]]},
 }
 
 print(json.dumps(inventory))

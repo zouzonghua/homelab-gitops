@@ -1,6 +1,5 @@
 locals {
-  host_inventory    = yamldecode(file("${path.root}/../../../../inventory/hosts.yaml"))
-  service_inventory = yamldecode(file("${path.root}/../../../../inventory/services.yaml"))
+  host_inventory = yamldecode(file("${path.root}/../../../../inventory/hosts.yaml"))
 
   k3s_servers = {
     for host in local.host_inventory.hosts : host.name => {
@@ -11,11 +10,6 @@ locals {
     }
     if host.site == "chengdu" && host.role == "k3s-server"
   }
-
-  k3s_api_vip = one([
-    for service in local.service_inventory.services : service.address
-    if service.name == "chengdu-k3s-api"
-  ])
 }
 
 resource "proxmox_download_file" "debian_cloud_image" {

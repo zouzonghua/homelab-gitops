@@ -192,61 +192,18 @@
         port: 6443
         timeout: 300
 
-- name: 部署 API VIP 并导出 Kubeconfig
+- name: 导出 Kubeconfig
   hosts: k3s_bootstrap
   become: true
-  gather_facts: true
+  gather_facts: false
   tasks:
-    - name: 等待全部节点 Ready
+    - name: 等待节点 Ready
       ansible.builtin.command: >-
         k3s kubectl wait
         --for=condition=Ready
-        nodes
-        --all
+        node/{{ inventory_hostname }}
         --timeout=300s
       changed_when: false
-
-    - name: 查询 etcd 节点
-      ansible.builtin.command: >-
-        k3s kubectl get nodes
-        --selector=node-role.kubernetes.io/etcd
-        --output=name
-      register: etcd_nodes
-      changed_when: false
-
-    - name: 校验 etcd 节点
-      ansible.builtin.assert:
-        that:
-          - etcd_nodes.stdout_lines | length == groups['k3s_servers'] | length
-        fail_msg: 集群 etcd 节点数量不满足预期，停止发布 API VIP。
-
-    - name: 创建自动部署目录
-      ansible.builtin.file:
-        path: /var/lib/rancher/k3s/server/manifests
-        state: directory
-        mode: "0755"
-
-    - name: 部署 kube-vip
-      ansible.builtin.template:
-        src: ../templates/kube-vip.yaml.j2
-        dest: /var/lib/rancher/k3s/server/manifests/kube-vip.yaml
-        owner: root
-        group: root
-        mode: "0644"
-
-    - name: 配置 Traefik Ingress VIP
-      ansible.builtin.template:
-        src: ../templates/traefik-config.yaml.j2
-        dest: /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
-        owner: root
-        group: root
-        mode: "0644"
-
-    - name: 等待 API VIP
-      ansible.builtin.wait_for:
-        host: "{{ k3s_api_vip }}"
-        port: 6443
-        timeout: 300
 
     - name: 读取 Kubeconfig
       ansible.builtin.slurp:
@@ -269,13 +226,7 @@
         content: >-
           {{ remote_kubeconfig.content
              | b64decode
-             | regex_replace('https://127.0.0.1:6443', 'https://' ~ k3s_api_vip ~ ':6443') }}
+             | regex_replace('https://127.0.0.1:6443', 'https://' ~ ansible_host ~ ':6443') }}
       delegate_to: localhost
       become: false
       no_log: true
-
-    - name: 等待 Ingress VIP
-      ansible.builtin.wait_for:
-        host: "{{ k3s_ingress_vip }}"
-        port: 443
-        timeout: 300

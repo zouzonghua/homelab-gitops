@@ -1,23 +1,17 @@
 # 成都局域网入口
 
-Traefik 通过 kube-vip 使用 `10.10.10.68`，并按域名转发：
+Traefik 监听节点 IP `10.10.10.70`（80 / 443），并按域名转发：
 
-- `https://grafana.cd.home.arpa`
-- `https://nginx.cd.home.arpa`
+- `https://vault.cd.zouzonghua.cn`
+- `https://linkding.cd.zouzonghua.cn`
+- `https://grafana.cd.zouzonghua.cn`
 
-当前使用 Traefik 默认自签证书，浏览器会提示证书不受信任。
+已配置 Let's Encrypt 泛域名权威证书 `*.cd.zouzonghua.cn`，支持局域网直接 HTTPS 安全访问。
 
 验证：
 
 ```bash
 kubectl -n kube-system get service traefik
 kubectl get ingressroute -A
-curl -kI https://grafana.cd.home.arpa
-```
-
-Traefik 未获得 `10.10.10.68` 时，先检查：
-
-```bash
-kubectl -n kube-system logs daemonset/kube-vip-ds --tail=100
-kubectl -n kube-system get helmchartconfig traefik -o yaml
+curl -Iv https://linkding.cd.zouzonghua.cn
 ```
