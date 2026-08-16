@@ -17,9 +17,15 @@ variable "node_name" {
 }
 
 variable "vm_storage" {
-  description = "Local SSD datastore for the Debian template and K3s VM disks."
+  description = "Local SSD datastore for the K3s VM disks."
   type        = string
   default     = "local"
+}
+
+variable "template_storage" {
+  description = "Datastore for the Debian template and imported cloud image."
+  type        = string
+  default     = "pve_share"
 }
 
 variable "network_bridge" {

@@ -20,7 +20,7 @@ locals {
 
 resource "proxmox_download_file" "debian_cloud_image" {
   content_type       = "import"
-  datastore_id       = var.vm_storage
+  datastore_id       = var.template_storage
   node_name          = var.node_name
   file_name          = "debian-13-genericcloud-amd64-20260810-2566.qcow2"
   url                = var.debian_image_url
@@ -54,7 +54,7 @@ resource "proxmox_virtual_environment_vm" "debian_template" {
   }
 
   disk {
-    datastore_id = var.vm_storage
+    datastore_id = var.template_storage
     import_from  = proxmox_download_file.debian_cloud_image.id
     interface    = "scsi0"
     size         = 8
@@ -64,7 +64,7 @@ resource "proxmox_virtual_environment_vm" "debian_template" {
   }
 
   initialization {
-    datastore_id = var.vm_storage
+    datastore_id = var.template_storage
   }
 
   network_device {
