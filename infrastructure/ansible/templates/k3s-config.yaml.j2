@@ -13,3 +13,6 @@ disable:
   - {{ component | to_json }}
 {% endfor %}
 write-kubeconfig-mode: "0600"
+kubelet-arg:
+  - "image-gc-high-threshold=80"
+  - "image-gc-low-threshold=60"

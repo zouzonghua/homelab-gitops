@@ -5,6 +5,10 @@ metadata:
   namespace: kube-system
 spec:
   valuesContent: |-
+    ports:
+      web:
+        redirectTo:
+          port: websecure
     service:
       type: LoadBalancer
       annotations:
