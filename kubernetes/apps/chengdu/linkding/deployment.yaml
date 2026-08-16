@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: linkding
-          image: sissbruecker/linkding:latest
+          image: docker.m.daocloud.io/sissbruecker/linkding:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
