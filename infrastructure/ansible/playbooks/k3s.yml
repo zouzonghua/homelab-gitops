@@ -192,56 +192,6 @@
         port: 6443
         timeout: 300
 
-- name: 加入其余 K3s Server
-  hosts: k3s_joiners
-  serial: 1
-  become: true
-  gather_facts: false
-  tasks:
-    - name: 等待第一个 API Server
-      ansible.builtin.wait_for:
-        host: "{{ hostvars[groups['k3s_bootstrap'][0]].ansible_host }}"
-        port: 6443
-        timeout: 300
-
-    - name: 下载 K3s 安装脚本
-      ansible.builtin.get_url:
-        url: "https://raw.githubusercontent.com/k3s-io/k3s/{{ k3s_version }}/install.sh"
-        dest: /usr/local/src/install-k3s.sh
-        mode: "0755"
-
-    - name: 检查 K3s 版本
-      ansible.builtin.command: k3s --version
-      register: installed_k3s
-      failed_when: false
-      changed_when: false
-
-    - name: 检查 K3s 服务
-      ansible.builtin.command: systemctl is-active k3s
-      register: k3s_service_state
-      failed_when: false
-      changed_when: false
-
-    - name: 安装固定版本 K3s
-      ansible.builtin.command: /usr/local/src/install-k3s.sh
-      environment:
-        INSTALL_K3S_VERSION: "{{ k3s_version }}"
-      when:
-        - k3s_version not in installed_k3s.stdout or k3s_service_state.stdout != 'active'
-
-    - name: 等待节点 Ready
-      ansible.builtin.command: >-
-        k3s kubectl wait
-        --for=condition=Ready
-        node/{{ inventory_hostname }}
-        --timeout=300s
-      delegate_to: "{{ groups['k3s_bootstrap'][0] }}"
-      register: joined_node
-      retries: 30
-      delay: 10
-      until: joined_node.rc == 0
-      changed_when: false
-
 - name: 部署 API VIP 并导出 Kubeconfig
   hosts: k3s_bootstrap
   become: true

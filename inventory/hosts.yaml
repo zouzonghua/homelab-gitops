@@ -23,9 +23,3 @@ hosts:
     startup_order: 3
     status: active
 
-  - site: chengdu
-    vm_id: 130
-    name: cd-k3s-worker-01
-    address: 10.10.10.73
-    role: k3s-worker
-    status: reserved

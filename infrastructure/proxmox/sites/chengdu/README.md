@@ -4,16 +4,14 @@
 
 - `400 tpl-vm-debian`
 - `120 cd-k3s-server-01`（`10.10.10.70/24`）
-- `121 cd-k3s-server-02`（`10.10.10.71/24`）
-- `122 cd-k3s-server-03`（`10.10.10.72/24`）
 
-三台 K3s VM 使用 PVE 本地 SSD `local`，每台配置为 2 vCPU、2GB 内存和 20GB 磁盘；Debian 模板 400 保留在 `pve_share`。NFS 仅用于模板、备份及后续业务数据。`10.10.10.69` 仅预留给后续 kube-vip，不由本层创建。
+K3s VM 使用 PVE 本地 SSD `local`，配置为 6 vCPU、12GB 内存和 64GB 磁盘；Debian 模板 400 保留在 `pve_share`。NFS 仅用于模板、备份及后续业务数据。`10.10.10.69` 预留给 kube-vip，不由本层创建。
 
 VMID、名称、地址和启动顺序读取自仓库根目录 `inventory/`；不要在本目录重复维护节点清单。Debian Cloud Image 固定到 `20260810-2566` 并校验官方 SHA-512。
 
 ## 前置条件
 
-1. 在 OPNsense 中保留 `10.10.10.69–73`，排除 DHCP 动态分配。
+1. 在 OPNsense 中保留 `10.10.10.68–70`，排除 DHCP 动态分配。
 2. 创建最小权限 PVE API Token，至少允许下载镜像、创建模板和管理 VM。
 3. 确认 `local` 已启用 `Disk image`，且 `pve_share` 已启用 `Import` 与 `Disk image` 内容类型。
 4. 将 `terraform.tfvars.example` 复制为 `terraform.tfvars`，写入 SSH 公钥。
@@ -27,7 +25,7 @@ tofu version
 
 ## 配置 SSH 公钥
 
-`ssh_public_key` 是本机 SSH 密钥对中的公钥。OpenTofu 通过 Cloud-init 将它写入三台 Debian VM 的 `ops` 用户，用于无密码登录：
+`ssh_public_key` 是本机 SSH 密钥对中的公钥。OpenTofu 通过 Cloud-init 将它写入 Debian VM 的 `ops` 用户，用于无密码登录：
 
 ```bash
 ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.70
@@ -151,14 +149,12 @@ tofu show chengdu.tfplan
 tofu apply chengdu.tfplan
 ```
 
-Apply 会创建并启动三台 VM。执行前必须确认 Plan 不修改或删除 VMID `100`、`110` 及现有 LXC。
+Apply 会创建并启动 VM。执行前必须确认 Plan 不修改或删除 VMID `100`、`110` 及现有 LXC。
 
 创建完成后登录 Debian：
 
 ```bash
 ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.70
-ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.71
-ssh -i ~/.ssh/id_ed25519_homelab ops@10.10.10.72
 ```
 
 系统不设置 SSH 密码，仅允许 `ops` 使用私钥登录；需要 root Shell 时执行 `sudo -i`。
