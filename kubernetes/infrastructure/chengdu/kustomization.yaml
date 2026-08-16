@@ -5,3 +5,4 @@ resources:
   - namespaces
   - storage
   - traefik-redirect
+  - cert-manager

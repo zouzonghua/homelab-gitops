@@ -8,7 +8,7 @@ spec:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`linkding.cd.home.arpa`)
+      match: Host(`linkding.cd.zouzonghua.cn`) || Host(`linkding.cd.home.arpa`)
       services:
         - name: linkding
           port: 9090

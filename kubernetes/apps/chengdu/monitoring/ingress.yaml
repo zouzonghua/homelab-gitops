@@ -8,7 +8,7 @@ spec:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`grafana.cd.home.arpa`)
+      match: Host(`grafana.cd.zouzonghua.cn`) || Host(`grafana.cd.home.arpa`)
       services:
         - name: monitoring-grafana
           port: 80
