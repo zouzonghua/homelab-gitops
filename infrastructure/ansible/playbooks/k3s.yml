@@ -125,14 +125,7 @@
       no_log: true
       register: k3s_config
 
-    - name: 写入 K3s 镜像加速配置
-      ansible.builtin.template:
-        src: ../templates/registries.yaml.j2
-        dest: /etc/rancher/k3s/registries.yaml
-        owner: root
-        group: root
-        mode: "0644"
-      register: k3s_registries
+    # registries.yaml 在 K3s 安装完成后写入（见 Play 2），避免被 install.sh 覆盖
 
     - name: 检查 K3s 服务
       ansible.builtin.stat:
@@ -144,7 +137,7 @@
         name: k3s
         state: restarted
       when:
-        - k3s_config.changed or k3s_registries.changed
+        - k3s_config.changed
         - k3s_service.stat.exists
 
     - name: 等待重启后的 API Server
@@ -153,7 +146,7 @@
         port: 6443
         timeout: 300
       when:
-        - k3s_config.changed or k3s_registries.changed
+        - k3s_config.changed
         - k3s_service.stat.exists
 
 - name: 初始化第一个 K3s Server
@@ -185,6 +178,21 @@
         INSTALL_K3S_VERSION: "{{ k3s_version }}"
       when:
         - k3s_version not in installed_k3s.stdout or k3s_service_state.stdout != 'active'
+
+    - name: 写入 K3s 镜像加速配置
+      ansible.builtin.template:
+        src: ../templates/registries.yaml.j2
+        dest: /etc/rancher/k3s/registries.yaml
+        owner: root
+        group: root
+        mode: "0644"
+      register: k3s_registries
+
+    - name: 重启 K3s 使镜像加速生效
+      ansible.builtin.systemd:
+        name: k3s
+        state: restarted
+      when: k3s_registries.changed
 
     - name: 等待第一个 API Server
       ansible.builtin.wait_for:
