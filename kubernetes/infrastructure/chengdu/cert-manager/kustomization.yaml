@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - repository.yaml
   - release.yaml
+  - coredns-custom.yaml
   - clusterissuer.yaml
   - certificate.yaml
   - tlsstore.yaml

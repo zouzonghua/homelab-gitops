@@ -7,8 +7,6 @@ k3s_token: "{{ lookup('env', 'K3S_TOKEN') }}"
 k3s_disable:
   - servicelb
 
-kube_vip_version: v1.2.2
-
 ntp_servers:
   - 10.10.10.1
 ntp_fallback_servers:
