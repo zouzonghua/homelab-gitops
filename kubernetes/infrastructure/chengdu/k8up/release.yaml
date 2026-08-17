@@ -1,0 +1,23 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: k8up
+  namespace: k8up
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: k8up
+      version: 4.10.0
+      sourceRef:
+        kind: HelmRepository
+        name: k8up-io
+      interval: 12h
+  values:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
