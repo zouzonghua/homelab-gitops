@@ -5,6 +5,14 @@ metadata:
   namespace: monitoring
 spec:
   interval: 30m
+  install:
+    remediation:
+      retries: 3
+    timeout: 15m
+  upgrade:
+    remediation:
+      retries: 3
+    timeout: 15m
   chart:
     spec:
       chart: kube-prometheus-stack
