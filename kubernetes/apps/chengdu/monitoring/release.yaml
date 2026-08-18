@@ -30,6 +30,9 @@ spec:
         enabled: true
         storageClassName: nfs-client
         size: 5Gi
+      initChownData:
+        enabled: true
+
       service:
         type: ClusterIP
       resources:
