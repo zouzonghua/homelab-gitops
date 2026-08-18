@@ -26,6 +26,10 @@ spec:
       enabled: false
     grafana:
       replicas: 1
+      persistence:
+        enabled: true
+        storageClassName: nfs-client
+        size: 5Gi
       service:
         type: ClusterIP
       resources:
