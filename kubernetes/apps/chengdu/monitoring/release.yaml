@@ -40,6 +40,9 @@ spec:
             memory: 1Gi
         additionalScrapeConfigs:
           - job_name: pve
+            scrape_interval: 5s
+            scrape_timeout: 4s
             static_configs:
               - targets:
                   - 10.10.10.2:9100
+
