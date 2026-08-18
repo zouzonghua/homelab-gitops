@@ -28,10 +28,9 @@ spec:
       replicas: 1
       persistence:
         enabled: true
-        storageClassName: nfs-client
+        storageClassName: local-path
         size: 5Gi
-      initChownData:
-        enabled: true
+
 
       service:
         type: ClusterIP
